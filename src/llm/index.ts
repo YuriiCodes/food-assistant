@@ -1,9 +1,10 @@
 import {createOpenRouter} from "@openrouter/ai-sdk-provider";
 import {generateText, Output} from "ai";
 import {type FoodAnalysis, FoodAnalysisSchema} from "./schemas.ts";
+import {ENV} from "../config/env.ts";
 
 const openrouter = createOpenRouter({
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: ENV.OPEN_ROUTER_API_KEY,
 });
 
 
