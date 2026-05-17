@@ -1,5 +1,5 @@
 import type {DirectMessageHandler} from "chat";
-import {db} from "../../db";
+import {db} from "../../db/index.ts";
 import {users} from "../../db/schema.ts";
 
 export const withUserUpsert = (handler: DirectMessageHandler): DirectMessageHandler => {

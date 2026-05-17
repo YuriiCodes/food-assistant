@@ -1,5 +1,5 @@
-import './config/env'
-import {bot} from "./bot";
+import './config/env.ts'
+import {bot} from "./bot/index.ts";
 
 
 

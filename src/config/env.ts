@@ -1,4 +1,5 @@
 import {z} from "zod";
+import process from "node:process";
 
 const envSchema = z.object({
     TELEGRAM_BOT_TOKEN: z.string(),
