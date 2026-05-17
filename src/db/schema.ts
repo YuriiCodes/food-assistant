@@ -4,7 +4,7 @@ import { relations, sql } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
     id: integer('id').primaryKey({ autoIncrement: true }),
-    telegramId: integer('telegram_id').unique().notNull(), // Handles 64-bit Telegram IDs
+    telegramId: text('telegram_id').unique().notNull(), // Handles 64-bit Telegram IDs
     firstName: text('first_name'),
     username: text('username'),
     createdAt: integer('created_at', { mode: 'timestamp' })

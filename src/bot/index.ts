@@ -1,8 +1,11 @@
 import {createTelegramAdapter} from "@chat-adapter/telegram";
-import {type Attachment, Chat, type DirectMessageHandler} from "chat";
+import {type Attachment, Chat} from "chat";
 import {createMemoryState} from "@chat-adapter/state-memory";
 import {analyzeFoodImage} from "../llm/index.js";
 import type {FoodAnalysis} from "../llm/schemas.ts";
+
+import {withUserUpsert} from "./middlewares/with-user-upsert.ts";
+import {withAllowedChannel} from "./middlewares/with-allowed-channel.ts";
 
 const telegramAdapter = createTelegramAdapter({
     mode: "polling",
@@ -15,19 +18,6 @@ export const bot = new Chat({
     },
     state: createMemoryState()
 });
-
-const ALLOWED_CHANNEL_IDS = [process.env.TELEGRAM_ALLOWED_CHANNEL]
-
-const withAllowedChannel = (handler: DirectMessageHandler): DirectMessageHandler => {
-    return async (thread, message, channel, context) => {
-        if (!ALLOWED_CHANNEL_IDS.includes(thread.channelId)) {
-            console.warn(`Unknown user from channel ${thread.channelId} - skipping`);
-            return;
-        }
-
-        return handler(thread, message, channel, context);
-    };
-};
 
 
 const extractImage = async (attachment: Attachment): Promise<{ url: string }> => {
@@ -54,24 +44,24 @@ const craftMessage = ({carbs, total_calories, fats, protein}: FoodAnalysis): str
 }
 
 bot.onDirectMessage(
-    withAllowedChannel(async (thread, message, channel, context) => {
+    withAllowedChannel(
+        withUserUpsert(async (thread, message, channel, context) => {
             const imageAttachment = message.attachments.find(att => att.type === 'image');
             if (!imageAttachment) {
-                await thread.post("Please provide image")
-                return
+                await thread.post("Please provide an image");
+                return;
             }
 
-            const {url: imageUrl} = await extractImage(imageAttachment)
-
+            const {url: imageUrl} = await extractImage(imageAttachment);
 
             const analysis = await analyzeFoodImage({
-                imageUrl, text: message?.text
+                imageUrl,
+                text: message?.text
             });
 
-
-            const resultMessage = craftMessage(analysis)
+            const resultMessage = craftMessage(analysis);
             await thread.post(resultMessage);
-        }
-    ))
-;
+        })
+    )
+);
 
