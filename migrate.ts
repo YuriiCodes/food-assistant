@@ -6,4 +6,5 @@ import { Database } from "bun:sqlite";
 
 const sqlite = new Database("database.sqlite");
 const db = drizzle(sqlite);
+
 migrate(db, { migrationsFolder: "./drizzle" });
