@@ -29,6 +29,8 @@ const extractImage = async (attachment: Attachment): Promise<{ url: string, file
     const base64 = imageBuffer.toString('base64');
     const mimeType = attachment.mimeType ?? 'image/jpeg';
     const url = `data:${mimeType};base64,${base64}`;
+
+    console.log("Extracted image from metadata")
     return {url, fileId: attachment!.fetchMetadata!.fileId!}
 }
 
@@ -72,6 +74,8 @@ const saveUserMeal = async ({user, schema, text, imageFileId}:{user: User, schem
         fats: schema.fats,
         imageFileId,
     }).returning()
+
+    console.log(`saved meal ${record?.id} for user ${user.id}`)
 
     return record
 }
