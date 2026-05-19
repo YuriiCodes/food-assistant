@@ -82,6 +82,7 @@ const saveUserMeal = async ({user, schema, text, imageFileId}:{user: User, schem
 
 bot.onDirectMessage(
     withAllowedChannel(async (thread, message) => {
+            console.log("received new message")
             const user = await ensureUserExists(message.author)
 
             const imageAttachment = message.attachments.find(att => att.type === 'image');
