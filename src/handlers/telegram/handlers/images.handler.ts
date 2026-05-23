@@ -1,23 +1,15 @@
 import { Composer } from "grammy";
 import type { Context } from "grammy";
-import type { UsersService } from "../../../services/users.service.ts";
 import type { MealsService } from "../../../services/meals.service.ts";
 import { analyzeFoodImage } from "../../../llm/index.ts";
 import type { FoodAnalysisResult } from "../../../llm/schemas.ts";
 import { ENV } from "../../../config/env.ts";
+import type {AppContext} from "../types/app-context.ts";
 
-export function createImageHandler(usersService: UsersService, mealsService: MealsService) {
-    const composer = new Composer<Context>();
+export function createImageHandler(mealsService: MealsService) {
+    const composer = new Composer<AppContext>();
 
     composer.on("message:photo", async (ctx) => {
-        const from = ctx.message.from;
-
-        const user = await usersService.upsert({
-            telegramId: String(from.id),
-            firstName: [from.first_name, from.last_name].filter(Boolean).join(" "),
-            username: from.username,
-        });
-
         const photo = ctx.message.photo.at(-1)!;
         const { url: imageUrl, fileId } = await extractImage(ctx, photo.file_id);
 
@@ -27,7 +19,7 @@ export function createImageHandler(usersService: UsersService, mealsService: Mea
         });
 
         await mealsService.create({
-            userId: user.id,
+            userId: ctx.user.id,
             rawText: ctx.message.caption,
             imageFileId: fileId,
             ...analysis,
@@ -38,7 +30,6 @@ export function createImageHandler(usersService: UsersService, mealsService: Mea
 
     return composer;
 }
-
 async function extractImage(ctx: Context, fileId: string): Promise<{ url: string; fileId: string }> {
     const file = await ctx.api.getFile(fileId);
     const filePath = file.file_path;

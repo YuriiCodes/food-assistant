@@ -6,15 +6,16 @@ import { createCommandHandler } from "./handlers/commands.handler.ts";
 import type { UsersService } from "../../services/users.service.ts";
 import type { MealsService } from "../../services/meals.service.ts";
 import { ENV } from "../../config/env.ts";
+import {createUserMiddleware} from "./middlewares/with-user.ts";
+import type {AppContext} from "./types/app-context.ts";
 
 export class TelegramBot {
-    private bot = new Bot<Context>(ENV.TELEGRAM_BOT_TOKEN);
+    private bot = new Bot<AppContext>(ENV.TELEGRAM_BOT_TOKEN);
 
     constructor(usersService: UsersService, mealsService: MealsService) {
-        // Apply allowed-channel gate to all handlers
         this.bot.use(withAllowedChannel);
-
-        this.bot.use(createImageHandler(usersService, mealsService));
+        this.bot.use(createUserMiddleware(usersService));
+        this.bot.use(createImageHandler(mealsService));
         this.bot.use(createCommandHandler(usersService));
     }
 
