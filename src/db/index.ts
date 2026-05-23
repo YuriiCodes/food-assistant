@@ -1,10 +1,7 @@
-import {drizzle} from 'drizzle-orm/libsql';
-import {createClient} from '@libsql/client';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
 
-const client = createClient({
-    url: process.env.DATABASE_URL!,
-    authToken: process.env.DATABASE_AUTH_TOKEN!
-});
+import {ENV} from "../config/env.ts";
 
-export const db = drizzle({client});
+
+export const db = drizzle(ENV.DATABASE_URL!);

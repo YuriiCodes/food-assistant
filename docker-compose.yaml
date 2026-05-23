@@ -1,11 +1,11 @@
 services:
-  db:
-    image: ghcr.io/tursodatabase/libsql-server:latest
-    platform: linux/amd64
+  database:
+    image: "postgres:17"
     ports:
-      - "8080:8080"
-      - "5001:5001"
-    # environment:
-    #   - SQLD_NODE=primary
+      - 5432:5432
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: default_database
     volumes:
-      - ./data/libsql:/var/lib/sqld
+      - ./db-data/:/var/lib/postgresql/data/

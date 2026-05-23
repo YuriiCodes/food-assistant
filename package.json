@@ -6,6 +6,7 @@
   "scripts": {},
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10"
   },
   "peerDependencies": {
@@ -14,11 +15,11 @@
   "dependencies": {
     "@chat-adapter/state-memory": "^4.28.1",
     "@chat-adapter/telegram": "^4.28.1",
-    "@libsql/client": "^0.17.3",
     "@openrouter/ai-sdk-provider": "^2.9.0",
     "ai": "^6.0.184",
     "chat": "^4.28.1",
     "drizzle-orm": "^0.45.2",
+    "pg": "^8.21.0",
     "zod": "^4.4.3"
   }
 }

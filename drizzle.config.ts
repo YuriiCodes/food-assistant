@@ -3,7 +3,7 @@ import {ENV} from "./src/config/env.ts";
 
 
 export default defineConfig({
-    dialect: "turso",
+    dialect: "postgresql",
     schema: './src/db/schema.ts',
     out: "./drizzle",
     dbCredentials: {
