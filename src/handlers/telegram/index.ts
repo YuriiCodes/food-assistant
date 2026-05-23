@@ -2,29 +2,11 @@ import {UsersService} from "../../services/users.service.ts";
 import {type Attachment, Chat} from "chat";
 import {createMemoryState} from "@chat-adapter/state-memory";
 import {createTelegramAdapter} from "@chat-adapter/telegram";
-import type {FoodAnalysis} from "../../llm/schemas.ts";
-import {meals, type User} from "../../db/schema.ts";
-import {db} from "../../db";
-
+import type {FoodAnalysisResult} from "../../llm/schemas.ts";
 import {analyzeFoodImage} from "../../llm";
 import {withAllowedChannel} from "./middlewares/with-allowed-channel.ts";
+import type {MealsService} from "../../services/meals.service.ts";
 
-
-const saveUserMeal = async ({user, schema, text, imageFileId}:{user: User, schema: FoodAnalysis, text: string, imageFileId: string}) => {
-    const [record] = await db.insert(meals).values({
-        userId: user.id,
-        rawText: text,
-        totalCalories: schema.total_calories,
-        carbs: schema.carbs,
-        protein: schema.protein,
-        fats: schema.fats,
-        imageFileId,
-    }).returning()
-
-    console.log(`saved meal ${record?.id} for user ${user.id}`)
-
-    return record
-}
 
 export class TelegramBot {
     private bot = new Chat({
@@ -37,7 +19,7 @@ export class TelegramBot {
         state: createMemoryState()
     })
 
-    constructor(private readonly usersService: UsersService) {
+    constructor(private readonly usersService: UsersService, private readonly mealsService: MealsService) {
         // TODO: mv to separate handlers
         this.bot.onDirectMessage(
             withAllowedChannel(async (thread, message) => {
@@ -62,14 +44,15 @@ export class TelegramBot {
                         text: message?.text
                     });
 
-                    await saveUserMeal({
-                        user,
+                    await this.mealsService.create({
+                        userId: user.id,
+                        rawText: message?.text,
                         imageFileId: fileId,
-                        schema: analysis,
-                        text: message?.text,
+                        ...analysis,
                     })
 
                     const resultMessage = this.craftMessage(analysis);
+
                     await thread.post(resultMessage);
                 }
             )
@@ -90,11 +73,11 @@ export class TelegramBot {
         return {url, fileId: attachment!.fetchMetadata!.fileId!}
     }
 
-    private craftMessage({carbs, total_calories, fats, protein}: FoodAnalysis): string {
+    private craftMessage({carbs, totalCalories, fats, protein}: FoodAnalysisResult): string {
         return `
 🍽️ Food Analysis Results:
 
-Calories: ${total_calories} kcal
+Calories: ${totalCalories} kcal
 Carbs: ${carbs}g
 Protein: ${protein}g
 Fats: ${fats}g

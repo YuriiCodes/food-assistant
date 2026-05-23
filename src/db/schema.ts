@@ -28,6 +28,8 @@ export const meals = pgTable('meals', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export type InsertMealsModel = InferInsertModel<typeof meals>
+
 export const usersRelations = relations(users, ({ many }) => ({
     meals: many(meals),
 }));
