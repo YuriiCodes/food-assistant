@@ -7,6 +7,8 @@ const envSchema = z.object({
     TELEGRAM_API_BASE_URL: z.string(),
     OPEN_ROUTER_API_KEY: z.string(),
     TELEGRAM_ALLOWED_CHANNEL: z.string(),
+    DATABASE_URL: z.string(),
+    DATABASE_AUTH_TOKEN: z.string()
 });
 
 type Env = z.infer<typeof envSchema>;

@@ -1,10 +1,8 @@
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
-
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import { Database } from "bun:sqlite";
+import {migrate} from "drizzle-orm/bun-sql/migrator"
 
 
-const sqlite = new Database("database.sqlite");
-const db = drizzle(sqlite);
+import {db} from "./src/db";
 
-migrate(db, { migrationsFolder: "./drizzle" });
+
+// @ts-ignore
+migrate(db, {migrationsFolder: "./drizzle"});
