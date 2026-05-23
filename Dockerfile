@@ -10,4 +10,4 @@ RUN bun install --frozen-lockfile
 
 COPY . .
 
-CMD ["sh", "-c", "bun run migrate && bun src/index.ts"]
+CMD ["sh", "-c", "bunx drizzle-kit migrate && bun src/index.ts"]
