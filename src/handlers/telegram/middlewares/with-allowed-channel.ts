@@ -1,5 +1,6 @@
 import type {DirectMessageHandler} from "chat";
-import {ENV} from "../../config/env.ts";
+import {ENV} from "../../../config/env.ts";
+
 
 
 const ALLOWED_CHANNEL_IDS = [ENV.TELEGRAM_ALLOWED_CHANNEL]
