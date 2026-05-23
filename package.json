@@ -13,12 +13,10 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@chat-adapter/state-memory": "^4.28.1",
-    "@chat-adapter/telegram": "^4.28.1",
     "@openrouter/ai-sdk-provider": "^2.9.0",
     "ai": "^6.0.184",
-    "chat": "^4.28.1",
     "drizzle-orm": "^0.45.2",
+    "grammy": "^1.43.0",
     "pg": "^8.21.0",
     "zod": "^4.4.3"
   }

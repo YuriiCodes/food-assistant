@@ -8,5 +8,5 @@ const usersService = new UsersService(db)
 const mealsService = new MealsService(db)
 const telegramBot = new TelegramBot(usersService, mealsService)
 
-void telegramBot.startPolling();
+void telegramBot.start();
 
