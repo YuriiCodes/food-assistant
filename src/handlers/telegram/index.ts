@@ -1,5 +1,6 @@
-import { Bot } from "grammy";
+import { Bot, GrammyError, HttpError } from "grammy";
 import { ENV } from "../../config/env.ts";
+import { Sentry } from "../../config/sentry.ts";
 import { TextNutritionReportFormatter } from "../../formatters/text-nutrition-report-formatter.ts";
 import { createLogger } from "../../lib/logger.ts";
 import type { MealsService } from "../../services/meals.service.ts";
@@ -21,11 +22,53 @@ export class TelegramBot {
 		this.bot.use(createUserMiddleware(usersService));
 		this.bot.use(createImageHandler(mealsService));
 		this.bot.use(createCommandHandler(mealsService, formatter));
+		this.addSentry();
 	}
 
 	public async startPolling(): Promise<void> {
 		this.logger.info("starting Telegram bot...");
 		void this.bot.start();
 		this.logger.info("⚡ Telegram bot started");
+	}
+
+	private addSentry() {
+		this.bot.catch((err) => {
+			const ctx = err.ctx;
+			const e = err.error;
+
+			const sentryContext = {
+				extra: {
+					update_id: ctx.update.update_id,
+					chat_id: ctx.chat?.id,
+					user_id: ctx.from?.id,
+				},
+			};
+
+			if (e instanceof GrammyError) {
+				Sentry.captureException(e, {
+					...sentryContext,
+					fingerprint: ["grammy-error", e.description],
+				});
+				this.logger.error(
+					{ update_id: ctx.update.update_id, description: e.description },
+					"Grammy error",
+				);
+			} else if (e instanceof HttpError) {
+				Sentry.captureException(e, {
+					...sentryContext,
+					fingerprint: ["http-error", e.message],
+				});
+				this.logger.error(
+					{ update_id: ctx.update.update_id, err: e },
+					"Could not contact Telegram",
+				);
+			} else {
+				Sentry.captureException(e, sentryContext);
+				this.logger.error(
+					{ update_id: ctx.update.update_id, err: e },
+					"Unknown error",
+				);
+			}
+		});
 	}
 }
