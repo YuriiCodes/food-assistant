@@ -45,6 +45,11 @@ export function createCommandHandler(
 		);
 	});
 
+	// TODO: Drop me after testing
+	composer.command("error", async (ctx) => {
+		throw new Error("Error on composer commmand for Sentry test");
+	});
+
 	composer.command("macros", async (ctx) => {
 		const buttonRow = TIMEFRAMES_FOR_ANALYSIS.map(([label, data]) =>
 			InlineKeyboard.text(label, data),
