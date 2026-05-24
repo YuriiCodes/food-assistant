@@ -7,6 +7,9 @@ const envSchema = z.object({
 	DATABASE_URL: z.string().nonoptional(),
 
 	NODE_ENV: z.enum(ALLOWED_ENVS),
+
+	SENTRY_DSN: z.string(),
+
 	OPEN_ROUTER_MODEL: z.string(),
 	OPEN_ROUTER_API_KEY: z.string(),
 
