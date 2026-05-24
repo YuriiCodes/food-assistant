@@ -1,5 +1,6 @@
 import { Bot } from "grammy";
 import { ENV } from "../../config/env.ts";
+import { TextNutritionReportFormatter } from "../../formatters/text-nutrition-report-formatter.ts";
 import { createLogger } from "../../lib/logger.ts";
 import type { MealsService } from "../../services/meals.service.ts";
 import type { UsersService } from "../../services/users.service.ts";
@@ -14,10 +15,12 @@ export class TelegramBot {
 	private bot = new Bot<AppContext>(ENV.TELEGRAM_BOT_TOKEN);
 
 	constructor(usersService: UsersService, mealsService: MealsService) {
+		const formatter = new TextNutritionReportFormatter();
+
 		this.bot.use(withAllowedChannel);
 		this.bot.use(createUserMiddleware(usersService));
 		this.bot.use(createImageHandler(mealsService));
-		this.bot.use(createCommandHandler());
+		this.bot.use(createCommandHandler(mealsService, formatter));
 	}
 
 	public async startPolling(): Promise<void> {
