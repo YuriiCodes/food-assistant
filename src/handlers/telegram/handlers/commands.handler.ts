@@ -1,5 +1,6 @@
 import { Composer, InlineKeyboard } from "grammy";
 import type { NutritionReportFormatter } from "../../../formatters/nutrition-report-formatter.interface.ts";
+import { createLogger } from "../../../lib/logger.ts";
 import { getDailyRange, getWeeklyRange } from "../../../lib/time.ts";
 import type { MealsService } from "../../../services/meals.service.ts";
 import type { AppContext } from "../types/app-context.ts";
@@ -27,6 +28,7 @@ const TIMEFRAMES_FOR_ANALYSIS = TIMEFRAMES.map(
 	({ label, value }) => [label, value] as const,
 );
 
+const logger = createLogger("createCommandHandler");
 export function createCommandHandler(
 	mealsService: MealsService,
 	formatter: NutritionReportFormatter,
@@ -73,6 +75,8 @@ export function createCommandHandler(
 			await ctx.reply(formatter.format(aggregate, timeframe.label), {
 				parse_mode: "Markdown",
 			});
+
+			logger.info({ userId }, "sent report");
 		});
 	}
 
