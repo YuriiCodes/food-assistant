@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@openrouter/ai-sdk-provider": "^2.9.0",
+		"@sentry/bun": "^10.53.1",
 		"ai": "^6.0.184",
 		"drizzle-orm": "^0.45.2",
 		"grammy": "^1.43.0",

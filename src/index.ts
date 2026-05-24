@@ -1,3 +1,4 @@
+import "./config/sentry.ts";
 import "./config/env.ts";
 import { db } from "./db";
 import { TelegramBot } from "./handlers/telegram";
