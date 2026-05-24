@@ -23,11 +23,16 @@ export class TelegramBot {
 		this.bot.use(createImageHandler(mealsService));
 		this.bot.use(createCommandHandler(mealsService, formatter));
 		this.addSentry();
+		this.enableGracefulShutdown();
 	}
 
 	public async startPolling(): Promise<void> {
 		this.logger.info("starting Telegram bot...");
-		void this.bot.start();
+		this.bot.start().catch((err) => {
+			this.logger.error({ err }, "Telegram bot crashed");
+			Sentry.captureException(err);
+			process.exit(1);
+		});
 		this.logger.info("⚡ Telegram bot started");
 	}
 
@@ -70,5 +75,17 @@ export class TelegramBot {
 				);
 			}
 		});
+	}
+
+	private enableGracefulShutdown() {
+		const shutdown = async (signal: string) => {
+			this.logger.info({ signal }, "Shutting down Telegram bot...");
+			await this.bot.stop();
+			await Sentry.flush(2000);
+			this.logger.info("Telegram bot stopped");
+		};
+
+		process.once("SIGINT", () => void shutdown("SIGINT"));
+		process.once("SIGTERM", () => void shutdown("SIGTERM"));
 	}
 }
