@@ -8,6 +8,7 @@ import type { MealsService } from "../../services/meals.service.ts";
 import type { UsersService } from "../../services/users.service.ts";
 import { createCommandHandler } from "./handlers/commands.handler.ts";
 import { createImageHandler } from "./handlers/images.handler.ts";
+import { createTextHandler } from "./handlers/message.handler.ts";
 import { withAllowedChannel } from "./middlewares/with-allowed-channel.ts";
 import { createUserMiddleware } from "./middlewares/with-user.ts";
 import type { AppContext } from "./types/app-context.ts";
@@ -27,6 +28,7 @@ export class TelegramBot {
 		this.bot.use(createUserMiddleware(usersService));
 		this.bot.use(createImageHandler(mealsService, foodCalorieExtractorService));
 		this.bot.use(createCommandHandler(mealsService, formatter));
+		this.bot.use(createTextHandler(mealsService, foodCalorieExtractorService));
 		this.addSentry();
 		this.enableGracefulShutdown();
 	}
