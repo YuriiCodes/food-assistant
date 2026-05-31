@@ -13,7 +13,7 @@ const mealsService = new MealsService(db);
 const openrouter = createOpenRouter({
 	apiKey: ENV.OPEN_ROUTER_API_KEY,
 });
-const llmModel = openrouter("google/gemini-2.5-pro");
+const llmModel = openrouter(ENV.OPEN_ROUTER_MODEL);
 const foodCalorieExtractorService = new LlmFoodCalorieExtractorService(
 	llmModel,
 );
