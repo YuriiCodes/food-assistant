@@ -3,6 +3,7 @@ import { ENV } from "../../config/env.ts";
 import { Sentry } from "../../config/sentry.ts";
 import { TextNutritionReportFormatter } from "../../formatters/text-nutrition-report-formatter.ts";
 import { createLogger } from "../../lib/logger.ts";
+import type { FoodCalorieExtractor } from "../../services/llm/food-calorie-extractor.interface.ts";
 import type { MealsService } from "../../services/meals.service.ts";
 import type { UsersService } from "../../services/users.service.ts";
 import { createCommandHandler } from "./handlers/commands.handler.ts";
@@ -15,12 +16,16 @@ export class TelegramBot {
 	private readonly logger = createLogger(this.constructor.name);
 	private bot = new Bot<AppContext>(ENV.TELEGRAM_BOT_TOKEN);
 
-	constructor(usersService: UsersService, mealsService: MealsService) {
+	constructor(
+		usersService: UsersService,
+		mealsService: MealsService,
+		foodCalorieExtractorService: FoodCalorieExtractor,
+	) {
 		const formatter = new TextNutritionReportFormatter();
 
 		this.bot.use(withAllowedChannel);
 		this.bot.use(createUserMiddleware(usersService));
-		this.bot.use(createImageHandler(mealsService));
+		this.bot.use(createImageHandler(mealsService, foodCalorieExtractorService));
 		this.bot.use(createCommandHandler(mealsService, formatter));
 		this.addSentry();
 		this.enableGracefulShutdown();
