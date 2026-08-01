@@ -2,7 +2,7 @@ import type { Context, MiddlewareFn } from "grammy";
 import { ENV } from "../../../config/env.ts";
 import { createLogger } from "../../../lib/logger.ts";
 
-const ALLOWED_CHANNEL_IDS = [ENV.TELEGRAM_ALLOWED_CHANNEL];
+const ALLOWED_CHANNEL_IDS = ENV.TELEGRAM_ALLOWED_CHANNEL.split(",");
 
 const logger = createLogger("withAllowedChannel");
 export const withAllowedChannel: MiddlewareFn<Context> = async (ctx, next) => {
