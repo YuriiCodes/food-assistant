@@ -35,6 +35,28 @@ export function createCommandHandler(
 ) {
 	const composer = new Composer<AppContext>();
 
+	async function sendReport(ctx: AppContext, timeframe: TimeframeLabel) {
+		const userId = ctx.from?.id;
+		if (!userId) {
+			await ctx.reply("Could not identify user.");
+			return;
+		}
+
+		const dbUserId = ctx.user.id;
+		const { from, to } = timeframe.getRange();
+		const aggregate = await mealsService.aggregateNutritionalInfo(
+			dbUserId,
+			from,
+			to,
+		);
+
+		await ctx.reply(formatter.format(aggregate, timeframe.label), {
+			parse_mode: "Markdown",
+		});
+
+		logger.info({ userId }, "sent report");
+	}
+
 	composer.command("start", async (ctx) => {
 		await ctx.reply("Welcome! Send me a photo of your meal to analyze it.");
 	});
@@ -54,29 +76,14 @@ export function createCommandHandler(
 		});
 	});
 
+	composer.command("today", async (ctx) => {
+		await sendReport(ctx, DAILY_TIMEFRAME);
+	});
+
 	for (const timeframe of TIMEFRAMES) {
 		composer.callbackQuery(timeframe.value, async (ctx) => {
 			await ctx.answerCallbackQuery();
-
-			const userId = ctx.from?.id;
-			if (!userId) {
-				await ctx.reply("Could not identify user.");
-				return;
-			}
-
-			const dbUserId = ctx.user.id;
-			const { from, to } = timeframe.getRange();
-			const aggregate = await mealsService.aggregateNutritionalInfo(
-				dbUserId,
-				from,
-				to,
-			);
-
-			await ctx.reply(formatter.format(aggregate, timeframe.label), {
-				parse_mode: "Markdown",
-			});
-
-			logger.info({ userId }, "sent report");
+			await sendReport(ctx, timeframe);
 		});
 	}
 
