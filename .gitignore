@@ -37,3 +37,4 @@ database.sqlite
 keys
 ignore
 db-data
+redis-data
