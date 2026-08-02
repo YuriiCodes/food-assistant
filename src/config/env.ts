@@ -16,6 +16,7 @@ const envSchema = z.object({
 	TELEGRAM_BOT_TOKEN: z.string(),
 	TELEGRAM_BOT_USERNAME: z.string(),
 	TELEGRAM_ALLOWED_CHANNEL: z.string(),
+	REDIS_URL: z.string(),
 });
 
 type Env = z.infer<typeof envSchema>;

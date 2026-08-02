@@ -3,7 +3,8 @@ import { ENV } from "../../config/env.ts";
 import { Sentry } from "../../config/sentry.ts";
 import { TextNutritionReportFormatter } from "../../formatters/text-nutrition-report-formatter.ts";
 import { createLogger } from "../../lib/logger.ts";
-import type { FoodCalorieExtractor } from "../../services/llm/food-calorie-extractor.interface.ts";
+import type { CaloriesIntakeJob } from "../../queue/calories-intake.job.ts";
+import type { Queue } from "../../queue/queue.interface.ts";
 import type { MealsService } from "../../services/meals.service.ts";
 import type { UsersService } from "../../services/users.service.ts";
 import { createCommandHandler } from "./handlers/commands.handler.ts";
@@ -21,16 +22,16 @@ export class TelegramBot {
 	constructor(
 		usersService: UsersService,
 		mealsService: MealsService,
-		foodCalorieExtractorService: FoodCalorieExtractor,
+		queue: Queue<CaloriesIntakeJob>,
 	) {
 		const formatter = new TextNutritionReportFormatter();
 
 		this.bot.use(withAllowedChannel);
 		this.bot.use(createUserMiddleware(usersService));
 		this.bot.use(withLogging);
-		this.bot.use(createImageHandler(mealsService, foodCalorieExtractorService));
 		this.bot.use(createCommandHandler(mealsService, formatter));
-		this.bot.use(createTextHandler(mealsService, foodCalorieExtractorService));
+		this.bot.use(createTextHandler(queue));
+		this.bot.use(createImageHandler(queue));
 		this.addSentry();
 		this.enableGracefulShutdown();
 	}

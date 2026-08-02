@@ -1,13 +1,8 @@
 FROM oven/bun:1.3.14
-
 WORKDIR /app
-
 COPY package.json bun.lock ./
-
-
 RUN bun install --frozen-lockfile
-
-
 COPY . .
-
-CMD ["sh", "-c", "bunx drizzle-kit migrate && bun src/index.ts"]
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
