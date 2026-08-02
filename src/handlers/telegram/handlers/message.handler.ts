@@ -1,29 +1,32 @@
 import { Composer } from "grammy";
-import type { FoodCalorieExtractor } from "../../../services/llm/food-calorie-extractor.interface.ts";
-import type { MealsService } from "../../../services/meals.service.ts";
+import { createLogger } from "../../../lib/logger.ts";
+import {
+	CALORIES_INTAKE_JOB_NAMES,
+	type CaloriesIntakeJob,
+} from "../../../queue/calories-intake.job.ts";
+import type { Queue } from "../../../queue/queue.interface.ts";
 import type { AppContext } from "../types/app-context.ts";
-import { craftMessage } from "../utils/craft-message.ts";
 
-export function createTextHandler(
-	mealsService: MealsService,
-	foodCalorieExtractorService: FoodCalorieExtractor,
-) {
+const logger = createLogger(createTextHandler.name);
+export function createTextHandler(mealQueue: Queue<CaloriesIntakeJob>) {
 	const composer = new Composer<AppContext>();
 
 	composer.on("message:text", async (ctx) => {
-		const description = ctx.message.text;
+		const userId = ctx.user.id;
+		const chatId = ctx.chat.id;
+		const messageId = ctx.message.message_id;
 
-		const analysis = await foodCalorieExtractorService.fromText({
-			description,
+		await mealQueue.add({
+			name: CALORIES_INTAKE_JOB_NAMES.TEXT,
+			payload: {
+				userId,
+				chatId,
+				messageId,
+				rawText: ctx.message.text,
+			},
 		});
 
-		await mealsService.create({
-			userId: ctx.user.id,
-			rawText: description,
-			...analysis,
-		});
-
-		await ctx.reply(craftMessage(analysis));
+		logger.info({ userId, chatId, messageId }, "enqueued text meal job");
 	});
 
 	return composer;

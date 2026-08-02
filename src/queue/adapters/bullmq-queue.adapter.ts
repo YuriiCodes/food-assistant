@@ -5,14 +5,14 @@ import type {
 	Queue,
 } from "../queue.interface.ts";
 
-interface BullMQQueueLike<T> {
-	add(name: string, data: T, opts?: BullJobOptions): Promise<unknown>;
+interface BullMQQueueLike {
+	add(name: string, data: unknown, opts?: BullJobOptions): Promise<unknown>;
 }
 
-export class BullMQQueueAdapter<T> implements Queue<T> {
-	constructor(private readonly bullQueue: BullMQQueueLike<T>) {}
+export class BullMQQueueAdapter<J extends Job<unknown>> implements Queue<J> {
+	constructor(private readonly bullQueue: BullMQQueueLike) {}
 
-	async add(job: Job<T>, options?: DomainJobOptions): Promise<void> {
+	async add(job: J, options?: DomainJobOptions): Promise<void> {
 		await this.bullQueue.add(
 			job.name,
 			job.payload,

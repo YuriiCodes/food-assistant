@@ -7,22 +7,22 @@ import { Worker as BullWorker } from "bullmq";
 import type { Job } from "../queue.interface.ts";
 import type {
 	WorkerOptions as DomainWorkerOptions,
-	JobHandler,
+	JobHandlerMap,
 	Worker,
 } from "../worker.interface.ts";
 
-export class BullMQWorkerAdapter<T> implements Worker {
+export class BullMQWorkerAdapter<J extends Job<unknown>> implements Worker {
 	private readonly bullWorker: BullWorker;
 
 	constructor(
 		queueName: string,
-		handler: JobHandler<T>,
+		handlers: JobHandlerMap<J>,
 		connection: IRedisClient,
 		options?: DomainWorkerOptions,
 	) {
 		this.bullWorker = new BullWorker(
 			queueName,
-			(bullJob: BullJob) => handler(this.toDomainJob(bullJob)),
+			(bullJob: BullJob) => this.dispatch(bullJob, handlers),
 			this.toBullOptions(connection, options),
 		);
 	}
@@ -31,8 +31,15 @@ export class BullMQWorkerAdapter<T> implements Worker {
 		await this.bullWorker.close();
 	}
 
-	private toDomainJob(bullJob: BullJob): Job<T> {
-		return { name: bullJob.name, payload: bullJob.data as T };
+	private async dispatch(
+		bullJob: BullJob,
+		handlers: JobHandlerMap<J>,
+	): Promise<void> {
+		const handler = handlers[bullJob.name as J["name"]];
+		if (!handler)
+			throw new Error(`No handler registered for job "${bullJob.name}"`);
+		const job = { name: bullJob.name, payload: bullJob.data } as J;
+		await handler(job as never);
 	}
 
 	private toBullOptions(

@@ -8,6 +8,6 @@ export interface JobOptions {
 	attempts?: number;
 }
 
-export interface Queue<T = unknown> {
-	add(job: Job<T>, options?: JobOptions): Promise<void>;
+export interface Queue<J extends Job<unknown> = Job<unknown>> {
+	add(job: J, options?: JobOptions): Promise<void>;
 }

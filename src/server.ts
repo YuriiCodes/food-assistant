@@ -1,0 +1,15 @@
+import "./config/sentry.ts";
+import "./config/env.ts";
+import { db } from "./db";
+import { TelegramBot } from "./handlers/telegram";
+import { mealQueue } from "./queue/calories-intake-bull.queue.ts";
+
+import { MealsService } from "./services/meals.service.ts";
+import { UsersService } from "./services/users.service.ts";
+
+const usersService = new UsersService(db);
+const mealsService = new MealsService(db);
+
+const telegramBot = new TelegramBot(usersService, mealsService, mealQueue);
+
+void telegramBot.startPolling();

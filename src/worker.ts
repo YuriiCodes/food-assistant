@@ -1,18 +1,42 @@
-import { redisConn } from "./cache";
-import { BullMQWorkerAdapter } from "./queue/adapters/bullmq-worker.adapter.ts";
-import type { CaloriesIntakePayload } from "./queue/calories-intake.job.ts";
-import type { Job } from "./queue/queue.interface.ts";
-import { QUEUE_NAMES } from "./queue/queue-names.constants.ts";
+import "./config/sentry.ts";
+import "./config/env.ts";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { Bot } from "grammy";
+import { ENV } from "./config/env.ts";
+import { db } from "./db";
+import { createLogger } from "./lib/logger.ts";
+import { createMealWorker } from "./queue/calories-intake.worker.ts";
+import { LlmFoodCalorieExtractorService } from "./services/llm/llm-food-calorie-extractor.service.ts";
+import { MealsService } from "./services/meals.service.ts";
 
-async function handleCaloriesIntake(
-	job: Job<CaloriesIntakePayload>,
-): Promise<void> {
-	console.log(job.payload.color);
-}
+const logger = createLogger("worker");
 
-export const caloriesIntakeWorker = new BullMQWorkerAdapter(
-	QUEUE_NAMES.CALORIES_INTAKE_QUEUE,
-	handleCaloriesIntake,
-	redisConn,
-	{ concurrency: 5 },
+const mealsService = new MealsService(db);
+
+const openrouter = createOpenRouter({
+	apiKey: ENV.OPEN_ROUTER_API_KEY,
+});
+const llmModel = openrouter(ENV.OPEN_ROUTER_MODEL);
+const foodCalorieExtractorService = new LlmFoodCalorieExtractorService(
+	llmModel,
 );
+
+const bot = new Bot(ENV.TELEGRAM_BOT_TOKEN);
+
+export const mealWorker = createMealWorker(
+	bot.api,
+	mealsService,
+	foodCalorieExtractorService,
+);
+
+logger.info("⚡ Worker started!");
+
+process.on("SIGTERM", async () => {
+	logger.info("Receiving SIGTERM, closing connection");
+	await mealWorker.close();
+});
+
+process.on("SIGINT", async () => {
+	logger.info("Receiving SIGINT, closing connection");
+	await mealWorker.close();
+});
