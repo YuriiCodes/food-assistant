@@ -21,6 +21,7 @@ export const meals = pgTable("meals", {
 		.references(() => users.id, { onDelete: "cascade" })
 		.notNull(),
 	rawText: text("raw_text"),
+	description: text("description"),
 	imageFileId: text("image_file_id"),
 	totalCalories: integer("total_calories").notNull(),
 	carbs: integer("carbs").notNull(),

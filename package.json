@@ -13,6 +13,7 @@
 		"dev:server": "bun --watch src/server.ts",
 		"dev:worker": "bun --watch src/worker.ts",
 
+		"migration:generate": "bunx drizzle-kit generate",
 		"migrate": "bunx drizzle-kit migrate",
 		"lint": "biome check .",
 		"format": "biome format --write ."
