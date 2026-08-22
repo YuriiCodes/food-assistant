@@ -1,5 +1,7 @@
 import type { Api } from "grammy";
+import { InlineKeyboard } from "grammy";
 import { redisConn } from "../cache";
+import { buildDeleteMealCallbackData } from "../lib/callback-data.ts";
 import { createLogger } from "../lib/logger.ts";
 import type { FoodCalorieExtractor } from "../services/llm/food-calorie-extractor.interface.ts";
 import type { FoodAnalysisResult } from "../services/llm/schemas.ts";
@@ -12,6 +14,12 @@ import {
 import { QUEUE_NAMES } from "./queue-names.constants.ts";
 
 const logger = createLogger(createMealWorker.name);
+
+function craftDeleteMealKeyboard(mealId: number): InlineKeyboard {
+	return InlineKeyboard.from([
+		[InlineKeyboard.text("🗑 Delete meal", buildDeleteMealCallbackData(mealId))],
+	]);
+}
 
 function craftMessage({
 	carbs,
@@ -75,11 +83,16 @@ export function createMealWorker(
 						"extracted calories from text",
 					);
 
-					await mealsService.create({ userId, rawText, ...analysis });
+					const meal = await mealsService.create({
+						userId,
+						rawText,
+						...analysis,
+					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
 
 					await api.sendMessage(chatId, craftMessage(analysis), {
 						reply_parameters: { message_id: messageId },
+						reply_markup: craftDeleteMealKeyboard(meal.id),
 					});
 					logger.info({ userId, chatId, messageId }, "sent analysis reply");
 				} catch (err) {
@@ -123,7 +136,7 @@ export function createMealWorker(
 						"extracted calories from image",
 					);
 
-					await mealsService.create({
+					const meal = await mealsService.create({
 						userId,
 						rawText: caption,
 						imageFileId,
@@ -133,6 +146,7 @@ export function createMealWorker(
 
 					await api.sendMessage(chatId, craftMessage(analysis), {
 						reply_parameters: { message_id: messageId },
+						reply_markup: craftDeleteMealKeyboard(meal.id),
 					});
 					logger.info({ userId, chatId, messageId }, "sent analysis reply");
 				} catch (err) {

@@ -12,9 +12,22 @@ export class MealsService {
 	async create(meal: InsertMealsModel) {
 		const [record] = await this.database.insert(meals).values(meal).returning();
 
+		if (!record) {
+			throw new Error("Failed to persist meal");
+		}
+
 		this.logger.info({ meal }, "saved meal");
 
 		return record;
+	}
+
+	async delete(id: number, userId: number): Promise<boolean> {
+		const result = await this.database
+			.delete(meals)
+			.where(and(eq(meals.id, id), eq(meals.userId, userId)))
+			.returning({ id: meals.id });
+
+		return result.length > 0;
 	}
 
 	async aggregateNutritionalInfo(
