@@ -1,6 +1,7 @@
 import { and, between, eq, sql } from "drizzle-orm";
 import type { db } from "../db";
 import { type InsertMealsModel, meals } from "../db/schema.ts";
+import { assert } from "../lib/assert.ts";
 import { createLogger } from "../lib/logger.ts";
 import type { NutritionAggregate } from "../types/nutrition-aggregates.type.ts";
 
@@ -12,9 +13,7 @@ export class MealsService {
 	async create(meal: InsertMealsModel) {
 		const [record] = await this.database.insert(meals).values(meal).returning();
 
-		if (!record) {
-			throw new Error("Failed to persist meal");
-		}
+		assert(record, "Failed to persist meal");
 
 		this.logger.info({ meal }, "saved meal");
 

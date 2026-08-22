@@ -1,4 +1,5 @@
 import { Composer } from "grammy";
+import { assert } from "../../../lib/assert.ts";
 import { createLogger } from "../../../lib/logger.ts";
 import {
 	CALORIES_INTAKE_JOB_NAMES,
@@ -24,10 +25,7 @@ export function createImageHandler(
 		logger.info({ userId, chatId, messageId }, "received photo message");
 
 		const photo = telegramMediaService.pickPhotoSize(ctx.message.photo);
-		if (!photo) {
-			logger.error({ userId, chatId, messageId }, "no photo found on message");
-			throw new Error("No photo provided");
-		}
+		assert(photo, "No photo provided");
 		logger.info(
 			{
 				userId,

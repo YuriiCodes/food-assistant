@@ -4,6 +4,7 @@ import type {
 	IRedisClient,
 } from "bullmq";
 import { Worker as BullWorker } from "bullmq";
+import { assert } from "../../lib/assert.ts";
 import type { Job } from "../queue.interface.ts";
 import type {
 	WorkerOptions as DomainWorkerOptions,
@@ -36,8 +37,7 @@ export class BullMQWorkerAdapter<J extends Job<unknown>> implements Worker {
 		handlers: JobHandlerMap<J>,
 	): Promise<void> {
 		const handler = handlers[bullJob.name as J["name"]];
-		if (!handler)
-			throw new Error(`No handler registered for job "${bullJob.name}"`);
+		assert(handler, `No handler registered for job "${bullJob.name}"`);
 		const job = { name: bullJob.name, payload: bullJob.data } as J;
 		await handler(job as never);
 	}

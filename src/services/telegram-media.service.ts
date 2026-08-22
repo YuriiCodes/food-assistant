@@ -1,6 +1,7 @@
 import type { Api } from "grammy";
 import type { PhotoSize } from "grammy/types";
 import { ENV } from "../config/env.ts";
+import { assert } from "../lib/assert.ts";
 
 const DEFAULT_TARGET_WIDTH = 1024;
 
@@ -31,12 +32,10 @@ export class TelegramMediaService {
 
 	public async fetchImage(fileId: string): Promise<ImageFileBuffer> {
 		const file = await this.api.getFile(fileId);
-		if (!file.file_path) throw new Error("No file_path returned from Telegram");
+		assert(file.file_path, "No file_path returned from Telegram");
 
 		const response = await fetch(buildTelegramFileUrl(file.file_path));
-		if (!response.ok) {
-			throw new Error(`Failed to fetch image: ${response.statusText}`);
-		}
+		assert(response.ok, `Failed to fetch image: ${response.statusText}`);
 
 		return {
 			buffer: Buffer.from(await response.arrayBuffer()),

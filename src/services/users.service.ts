@@ -1,5 +1,6 @@
 import type { db } from "../db";
 import { type InsertUserModel, type User, users } from "../db/schema.ts";
+import { assert } from "../lib/assert.ts";
 
 export class UsersService {
 	constructor(private readonly database: typeof db) {}
@@ -17,10 +18,7 @@ export class UsersService {
 			})
 			.returning();
 
-		if (!user) {
-			// TODO: logs
-			throw new Error("Error upserting user");
-		}
+		assert(user, "Error upserting user");
 
 		return user;
 	}
