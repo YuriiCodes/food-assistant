@@ -26,7 +26,7 @@ describe("parseDeleteMealCallbackData", () => {
 		).toBe(mealId);
 	});
 
-	it("returns undefined for malformed data", () => {
+	it("returns null for malformed data", () => {
 		const invalid = [
 			"delete_meal:",
 			"delete_meal:abc",

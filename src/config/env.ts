@@ -1,7 +1,7 @@
 import process from "node:process";
 import { z } from "zod";
 
-const ALLOWED_ENVS = ["production", "local"] as const;
+const ALLOWED_ENVS = ["production", "local", "test"] as const;
 
 const envSchema = z.object({
 	DATABASE_URL: z.url(),
