@@ -19,7 +19,7 @@ export function createDeleteMealHandler(
 		const data = ctx.callbackQuery.data;
 		const mealId = parseDeleteMealCallbackData(data);
 
-		if (mealId === undefined) {
+		if (mealId === null) {
 			await ctx.answerCallbackQuery({ text: "Invalid request." });
 			return;
 		}

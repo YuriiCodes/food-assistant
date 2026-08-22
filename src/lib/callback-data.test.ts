@@ -38,7 +38,7 @@ describe("parseDeleteMealCallbackData", () => {
 			"prefix_delete_meal:42",
 		];
 		for (const data of invalid) {
-			expect(parseDeleteMealCallbackData(data)).toBeUndefined();
+			expect(parseDeleteMealCallbackData(data)).toBeNull();
 		}
 	});
 });
