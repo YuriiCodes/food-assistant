@@ -5,6 +5,8 @@ import { assert } from "../lib/assert.ts";
 import { createLogger } from "../lib/logger.ts";
 import type { NutritionAggregate } from "../types/nutrition-aggregates.type.ts";
 
+const AGGREGATE_KEYS = ["calories", "carbs", "protein", "fats"] as const;
+
 export class MealsService {
 	private readonly logger = createLogger(this.constructor.name);
 
@@ -46,6 +48,17 @@ export class MealsService {
 			.where(and(eq(meals.userId, userId), between(meals.createdAt, from, to)))
 			.groupBy(sql`DATE(${meals.createdAt})`)
 			.orderBy(sql`DATE(${meals.createdAt})`);
+
+		for (const day of perDay) {
+			for (const key of AGGREGATE_KEYS) {
+				const value = Number(day[key]);
+				assert(
+					Number.isFinite(value) && value >= 0,
+					`aggregateNutritionalInfo: invalid ${key} value ${day[key]} for date ${day.date}`,
+				);
+				day[key] = value;
+			}
+		}
 
 		const totals = perDay.reduce(
 			(acc, day) => ({

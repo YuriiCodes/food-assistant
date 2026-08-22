@@ -1,4 +1,5 @@
 import { Composer } from "grammy";
+import { assert } from "../../../lib/assert.ts";
 import {
 	DELETE_MEAL_CALLBACK_REGEX,
 	parseDeleteMealCallbackData,
@@ -23,6 +24,7 @@ export function createDeleteMealHandler(
 			return;
 		}
 
+		assert(ctx.user, "delete meal handler ran without with-user middleware");
 		const userId = ctx.user.id;
 
 		const deleted = await mealsService.delete(mealId, userId);

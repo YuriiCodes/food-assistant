@@ -54,5 +54,7 @@ function buildTelegramFileUrl(filePath: string): string {
 
 function resolveMimeType(filePath: string): string {
 	const extension = filePath.split(".").pop()?.toLowerCase() ?? "";
-	return MIME_TYPE_BY_EXTENSION[extension] ?? "image/jpeg";
+	const mimeType = MIME_TYPE_BY_EXTENSION[extension];
+	assert(mimeType, `Unsupported image file extension "${extension}"`);
+	return mimeType;
 }

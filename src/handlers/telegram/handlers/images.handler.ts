@@ -18,6 +18,7 @@ export function createImageHandler(
 	const composer = new Composer<AppContext>();
 
 	composer.on("message:photo", async (ctx) => {
+		assert(ctx.user, "image handler ran without with-user middleware");
 		const chatId = ctx.chat.id;
 		const messageId = ctx.message.message_id;
 		const userId = ctx.user.id;

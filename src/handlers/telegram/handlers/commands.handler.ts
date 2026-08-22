@@ -1,5 +1,6 @@
 import { Composer, InlineKeyboard } from "grammy";
 import type { NutritionReportFormatter } from "../../../formatters/nutrition-report-formatter.interface.ts";
+import { assert } from "../../../lib/assert.ts";
 import { createLogger } from "../../../lib/logger.ts";
 import { getDailyRange, getWeeklyRange } from "../../../lib/time.ts";
 import type { MealsService } from "../../../services/meals.service.ts";
@@ -42,6 +43,7 @@ export function createCommandHandler(
 			return;
 		}
 
+		assert(ctx.user, "report handler ran without with-user middleware");
 		const dbUserId = ctx.user.id;
 		const { from, to } = timeframe.getRange();
 		const aggregate = await mealsService.aggregateNutritionalInfo(
