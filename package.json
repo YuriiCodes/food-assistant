@@ -16,7 +16,9 @@
 		"migration:generate": "bunx drizzle-kit generate",
 		"migrate": "bunx drizzle-kit migrate",
 		"lint": "biome check .",
-		"format": "biome format --write ."
+		"format": "biome format --write .",
+		"typecheck": "tsc --noEmit",
+		"test": "bun test"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.15",
