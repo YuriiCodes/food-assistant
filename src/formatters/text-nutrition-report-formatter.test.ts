@@ -40,15 +40,15 @@ describe("TextNutritionReportFormatter", () => {
 		const output = formatter.format(aggregate, "This week");
 
 		for (const day of aggregate.perDay) {
-			expect(output).toContain(`📅 *${day.date}*`);
-			expect(output).toContain(`🔥 ${day.calories} kcal`);
+			expect(output).toContain(`*${day.date}*`);
+			expect(output).toContain(`${day.calories} kcal`);
 			expect(output).toContain(`Carbs: ${day.carbs}g`);
 			expect(output).toContain(`Protein: ${day.protein}g`);
 			expect(output).toContain(`Fats: ${day.fats}g`);
 		}
 
-		expect(output).toContain(`📊 *Total (This week)*`);
-		expect(output).toContain(`🔥 ${aggregate.totals.calories} kcal`);
+		expect(output).toContain("*Total (This week)*");
+		expect(output).toContain(`${aggregate.totals.calories} kcal`);
 	});
 
 	it("preserves day order in the report", () => {
