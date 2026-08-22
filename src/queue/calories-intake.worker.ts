@@ -6,6 +6,7 @@ import { createLogger } from "../lib/logger.ts";
 import type { FoodCalorieExtractor } from "../services/llm/food-calorie-extractor.interface.ts";
 import type { FoodAnalysisResult } from "../services/llm/schemas.ts";
 import type { MealsService } from "../services/meals.service.ts";
+import type { TelegramMediaService } from "../services/telegram-media.service.ts";
 import { BullMQWorkerAdapter } from "./adapters/bullmq-worker.adapter.ts";
 import {
 	CALORIES_INTAKE_JOB_NAMES,
@@ -59,6 +60,7 @@ export function createMealWorker(
 	api: Api,
 	mealsService: MealsService,
 	foodCalorieExtractorService: FoodCalorieExtractor,
+	telegramMediaService: TelegramMediaService,
 ) {
 	return new BullMQWorkerAdapter<CaloriesIntakeJob>(
 		QUEUE_NAMES.CALORIES_INTAKE_QUEUE,
@@ -104,14 +106,7 @@ export function createMealWorker(
 				}
 			},
 			[CALORIES_INTAKE_JOB_NAMES.IMAGE]: async (job) => {
-				const {
-					userId,
-					chatId,
-					messageId,
-					caption,
-					imageBase64Url,
-					imageFileId,
-				} = job.payload;
+				const { userId, chatId, messageId, caption, imageFileId } = job.payload;
 				logger.info(
 					{ userId, chatId, messageId, hasCaption: Boolean(caption) },
 					"received image meal job",
@@ -120,6 +115,17 @@ export function createMealWorker(
 				await acknowledge(api, chatId, messageId);
 
 				try {
+					const { buffer, mimeType } =
+						await telegramMediaService.fetchImage(imageFileId);
+					const imageBase64Url = telegramMediaService.toDataUrl(
+						buffer,
+						mimeType,
+					);
+					logger.info(
+						{ userId, chatId, messageId, bytes: buffer.byteLength },
+						"fetched image from telegram",
+					);
+
 					const analysis = caption
 						? await foodCalorieExtractorService.fromTextAndImage({
 								description: caption,

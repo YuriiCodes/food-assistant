@@ -6,6 +6,7 @@ import { createLogger } from "../../lib/logger.ts";
 import type { CaloriesIntakeJob } from "../../queue/calories-intake.job.ts";
 import type { Queue } from "../../queue/queue.interface.ts";
 import type { MealsService } from "../../services/meals.service.ts";
+import { TelegramMediaService } from "../../services/telegram-media.service.ts";
 import type { UsersService } from "../../services/users.service.ts";
 import { createCommandHandler } from "./handlers/commands.handler.ts";
 import { createDeleteMealHandler } from "./handlers/delete-meal.handler.ts";
@@ -26,6 +27,7 @@ export class TelegramBot {
 		queue: Queue<CaloriesIntakeJob>,
 	) {
 		const formatter = new TextNutritionReportFormatter();
+		const telegramMediaService = new TelegramMediaService(this.bot.api);
 
 		this.bot.use(withAllowedChannel);
 		this.bot.use(createUserMiddleware(usersService));
@@ -33,7 +35,7 @@ export class TelegramBot {
 		this.bot.use(createCommandHandler(mealsService, formatter));
 		this.bot.use(createDeleteMealHandler(mealsService));
 		this.bot.use(createTextHandler(queue));
-		this.bot.use(createImageHandler(queue));
+		this.bot.use(createImageHandler(queue, telegramMediaService));
 		this.addSentry();
 		this.enableGracefulShutdown();
 	}

@@ -8,6 +8,7 @@ import { createLogger } from "./lib/logger.ts";
 import { createMealWorker } from "./queue/calories-intake.worker.ts";
 import { LlmFoodCalorieExtractorService } from "./services/llm/llm-food-calorie-extractor.service.ts";
 import { MealsService } from "./services/meals.service.ts";
+import { TelegramMediaService } from "./services/telegram-media.service.ts";
 
 const logger = createLogger("worker");
 
@@ -22,11 +23,13 @@ const foodCalorieExtractorService = new LlmFoodCalorieExtractorService(
 );
 
 const bot = new Bot(ENV.TELEGRAM_BOT_TOKEN);
+const telegramMediaService = new TelegramMediaService(bot.api);
 
 export const mealWorker = createMealWorker(
 	bot.api,
 	mealsService,
 	foodCalorieExtractorService,
+	telegramMediaService,
 );
 
 logger.info("⚡ Worker started!");

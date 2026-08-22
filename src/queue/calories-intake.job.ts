@@ -17,7 +17,6 @@ export interface TextCaloriesIntakePayload extends CaloriesIntakeJobBase {
 
 export interface ImageCaloriesIntakePayload extends CaloriesIntakeJobBase {
 	caption?: string;
-	imageBase64Url: string;
 	imageFileId: string;
 }
 
