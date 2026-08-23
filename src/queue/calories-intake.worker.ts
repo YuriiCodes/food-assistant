@@ -1,6 +1,6 @@
+import type { IRedisClient } from "bullmq";
 import type { Api } from "grammy";
 import { InlineKeyboard } from "grammy";
-import { redisConn } from "../cache";
 import { craftMessage } from "../handlers/telegram/utils/craft-message.ts";
 import { buildDeleteMealCallbackData } from "../lib/callback-data.ts";
 import { createLogger } from "../lib/logger.ts";
@@ -45,6 +45,7 @@ export function createMealWorker(
 	mealsService: MealsService,
 	foodCalorieExtractorService: FoodCalorieExtractor,
 	telegramMediaService: TelegramMediaService,
+	connection: IRedisClient,
 ) {
 	return new BullMQWorkerAdapter<CaloriesIntakeJob>(
 		QUEUE_NAMES.CALORIES_INTAKE_QUEUE,
@@ -150,7 +151,7 @@ export function createMealWorker(
 				}
 			},
 		},
-		redisConn,
+		connection,
 		{ concurrency: 5 },
 	);
 }

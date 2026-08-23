@@ -1,5 +1,5 @@
 import { and, between, eq, sql } from "drizzle-orm";
-import type { db } from "../db";
+import type { Database } from "../db";
 import { type InsertMealsModel, meals } from "../db/schema.ts";
 import { assert } from "../lib/assert.ts";
 import { createLogger } from "../lib/logger.ts";
@@ -12,7 +12,7 @@ const localDate = sql<string>`DATE(${meals.createdAt} AT TIME ZONE 'UTC')`;
 export class MealsService {
 	private readonly logger = createLogger(this.constructor.name);
 
-	constructor(private readonly database: typeof db) {}
+	constructor(private readonly database: Database) {}
 
 	async create(meal: InsertMealsModel) {
 		const [record] = await this.database

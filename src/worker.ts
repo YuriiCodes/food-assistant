@@ -2,9 +2,10 @@ import "./config/env.ts";
 import "./config/sentry.ts";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Bot } from "grammy";
+import { createRedisConnection } from "./cache";
 import { ENV } from "./config/env.ts";
 import { Sentry } from "./config/sentry.ts";
-import { db } from "./db";
+import { createDatabase } from "./db";
 import { createLogger } from "./lib/logger.ts";
 import { createMealWorker } from "./queue/calories-intake.worker.ts";
 import { LlmFoodCalorieExtractorService } from "./services/llm/llm-food-calorie-extractor.service.ts";
@@ -13,7 +14,10 @@ import { TelegramMediaService } from "./services/telegram-media.service.ts";
 
 const logger = createLogger("worker");
 
-const mealsService = new MealsService(db);
+const database = createDatabase(ENV.DATABASE_URL);
+const { rawClient, conn: redisConn } = createRedisConnection(ENV.REDIS_URL);
+
+const mealsService = new MealsService(database);
 
 const openrouter = createOpenRouter({
 	apiKey: ENV.OPEN_ROUTER_API_KEY,
@@ -31,6 +35,7 @@ export const mealWorker = createMealWorker(
 	mealsService,
 	foodCalorieExtractorService,
 	telegramMediaService,
+	redisConn,
 );
 
 logger.info("⚡ Worker started!");
@@ -43,7 +48,8 @@ async function shutdown(signal: NodeJS.Signals) {
 
 	logger.info({ signal }, "Shutting down worker...");
 	await mealWorker.close();
-	await db.$client.end();
+	rawClient.close();
+	await database.$client.end();
 	await Sentry.flush(2000);
 	logger.info("Worker stopped");
 }
