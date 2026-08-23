@@ -7,17 +7,28 @@ import type { NutritionAggregate } from "../types/nutrition-aggregates.type.ts";
 
 const AGGREGATE_KEYS = ["calories", "carbs", "protein", "fats"] as const;
 
+const localDate = sql<string>`DATE(${meals.createdAt} AT TIME ZONE 'UTC')`;
+
 export class MealsService {
 	private readonly logger = createLogger(this.constructor.name);
 
 	constructor(private readonly database: typeof db) {}
 
 	async create(meal: InsertMealsModel) {
-		const [record] = await this.database.insert(meals).values(meal).returning();
+		const [record] = await this.database
+			.insert(meals)
+			.values(meal)
+			.onConflictDoUpdate({
+				target: [meals.userId, meals.messageId],
+				set: {
+					messageId: sql`${meals.messageId}`,
+				},
+			})
+			.returning();
 
 		assert(record, "Failed to persist meal");
 
-		this.logger.info({ meal }, "saved meal");
+		this.logger.info({ meal: record }, "saved meal");
 
 		return record;
 	}
@@ -38,7 +49,7 @@ export class MealsService {
 	): Promise<NutritionAggregate> {
 		const perDay = await this.database
 			.select({
-				date: sql<string>`DATE(${meals.createdAt})`.as("date"),
+				date: localDate.as("date"),
 				calories: sql<number>`SUM(${meals.totalCalories})`.as("calories"),
 				carbs: sql<number>`SUM(${meals.carbs})`.as("carbs"),
 				protein: sql<number>`SUM(${meals.protein})`.as("protein"),
@@ -46,8 +57,8 @@ export class MealsService {
 			})
 			.from(meals)
 			.where(and(eq(meals.userId, userId), between(meals.createdAt, from, to)))
-			.groupBy(sql`DATE(${meals.createdAt})`)
-			.orderBy(sql`DATE(${meals.createdAt})`);
+			.groupBy(localDate)
+			.orderBy(localDate);
 
 		for (const day of perDay) {
 			for (const key of AGGREGATE_KEYS) {

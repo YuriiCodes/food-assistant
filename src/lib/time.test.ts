@@ -8,16 +8,16 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 const isMidnight = (date: Date) =>
-	date.getHours() === 0 &&
-	date.getMinutes() === 0 &&
-	date.getSeconds() === 0 &&
-	date.getMilliseconds() === 0;
+	date.getUTCHours() === 0 &&
+	date.getUTCMinutes() === 0 &&
+	date.getUTCSeconds() === 0 &&
+	date.getUTCMilliseconds() === 0;
 
 const isEndOfDay = (date: Date) =>
-	date.getHours() === 23 &&
-	date.getMinutes() === 59 &&
-	date.getSeconds() === 59 &&
-	date.getMilliseconds() === 999;
+	date.getUTCHours() === 23 &&
+	date.getUTCMinutes() === 59 &&
+	date.getUTCSeconds() === 59 &&
+	date.getUTCMilliseconds() === 999;
 
 describe("getDailyRange", () => {
 	it("spans today from midnight to end of day", () => {

@@ -1,5 +1,5 @@
-import "./config/sentry.ts";
 import "./config/env.ts";
+import "./config/sentry.ts";
 import { db } from "./db";
 import { TelegramBot } from "./handlers/telegram";
 import { mealQueue } from "./queue/calories-intake-bull.queue.ts";

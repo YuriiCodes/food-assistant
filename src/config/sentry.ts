@@ -1,8 +1,9 @@
 import * as Sentry from "@sentry/bun";
+import { ENV } from "./env.ts";
 
 Sentry.init({
-	dsn: process.env.SENTRY_DSN,
-	environment: process.env.NODE_ENV,
+	dsn: ENV.SENTRY_DSN,
+	environment: ENV.NODE_ENV,
 	tracesSampleRate: 0,
 });
 

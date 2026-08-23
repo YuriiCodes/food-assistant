@@ -15,6 +15,13 @@
 			"when": 1785671244202,
 			"tag": "0001_dusty_ego",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1787477173966,
+			"tag": "0002_deep_doorman",
+			"breakpoints": true
 		}
 	]
 }

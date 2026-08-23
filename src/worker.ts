@@ -1,8 +1,9 @@
-import "./config/sentry.ts";
 import "./config/env.ts";
+import "./config/sentry.ts";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Bot } from "grammy";
 import { ENV } from "./config/env.ts";
+import { Sentry } from "./config/sentry.ts";
 import { db } from "./db";
 import { createLogger } from "./lib/logger.ts";
 import { createMealWorker } from "./queue/calories-intake.worker.ts";
@@ -34,12 +35,18 @@ export const mealWorker = createMealWorker(
 
 logger.info("⚡ Worker started!");
 
-process.on("SIGTERM", async () => {
-	logger.info("Receiving SIGTERM, closing connection");
-	await mealWorker.close();
-});
+let shuttingDown = false;
 
-process.on("SIGINT", async () => {
-	logger.info("Receiving SIGINT, closing connection");
+async function shutdown(signal: NodeJS.Signals) {
+	if (shuttingDown) return;
+	shuttingDown = true;
+
+	logger.info({ signal }, "Shutting down worker...");
 	await mealWorker.close();
-});
+	await db.$client.end();
+	await Sentry.flush(2000);
+	logger.info("Worker stopped");
+}
+
+process.once("SIGTERM", (signal) => void shutdown(signal));
+process.once("SIGINT", (signal) => void shutdown(signal));
