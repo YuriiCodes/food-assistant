@@ -13,7 +13,7 @@ describe("craftMessage", () => {
 
 		expect(output).toBe(
 			[
-				"🍽️ Food Analysis Results:",
+				"🍽️*Margherita pizza*:",
 				"Calories: 520 kcal",
 				"Carbs: 60g",
 				"Protein: 25g",

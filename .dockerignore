@@ -1,0 +1,16 @@
+node_modules
+.env
+.env.*
+db-data
+redis-data
+.git
+.github
+.idea
+ignore
+coverage
+out
+dist
+*.log
+Dockerfile
+docker-compose.yaml
+README.md

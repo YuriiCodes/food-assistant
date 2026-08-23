@@ -4,6 +4,7 @@ import { ENV } from "../config/env.ts";
 import { assert } from "../lib/assert.ts";
 
 const DEFAULT_TARGET_WIDTH = 1024;
+const FILE_DOWNLOAD_TIMEOUT_MS = 30_000;
 
 const MIME_TYPE_BY_EXTENSION: Record<string, string> = {
 	jpg: "image/jpeg",
@@ -34,8 +35,15 @@ export class TelegramMediaService {
 		const file = await this.api.getFile(fileId);
 		assert(file.file_path, "No file_path returned from Telegram");
 
-		const response = await fetch(buildTelegramFileUrl(file.file_path));
-		assert(response.ok, `Failed to fetch image: ${response.statusText}`);
+		const response = await fetch(buildTelegramFileUrl(file.file_path), {
+			signal: AbortSignal.timeout(FILE_DOWNLOAD_TIMEOUT_MS),
+		});
+		if (!response.ok) {
+			const body = await response.text().catch(() => "");
+			throw new Error(
+				`Failed to fetch image: ${response.status} ${response.statusText}${body ? ` - ${body}` : ""}`,
+			);
+		}
 
 		return {
 			buffer: Buffer.from(await response.arrayBuffer()),

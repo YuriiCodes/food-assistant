@@ -17,7 +17,14 @@ const envSchema = z.object({
 		message: "must be a Telegram bot token (format: <id>:<hash>)",
 	}),
 	TELEGRAM_BOT_USERNAME: z.string().min(1),
-	TELEGRAM_ALLOWED_CHANNEL: z.string().min(1),
+	TELEGRAM_ALLOWED_CHANNEL: z
+		.string()
+		.regex(/^\d+(,\d+)*$/, {
+			message: "must be a comma-separated list of numeric chat IDs",
+		})
+		.transform((value) =>
+			value.split(",").map((id) => Number.parseInt(id, 10)),
+		),
 	REDIS_URL: z.url(),
 });
 

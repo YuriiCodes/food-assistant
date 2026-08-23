@@ -37,12 +37,6 @@ export function createCommandHandler(
 	const composer = new Composer<AppContext>();
 
 	async function sendReport(ctx: AppContext, timeframe: TimeframeLabel) {
-		const userId = ctx.from?.id;
-		if (!userId) {
-			await ctx.reply("Could not identify user.");
-			return;
-		}
-
 		assert(ctx.user, "report handler ran without with-user middleware");
 		const dbUserId = ctx.user.id;
 		const { from, to } = timeframe.getRange();
@@ -56,7 +50,7 @@ export function createCommandHandler(
 			parse_mode: "Markdown",
 		});
 
-		logger.info({ userId }, "sent report");
+		logger.info({ userId: ctx.from?.id }, "sent report");
 	}
 
 	composer.command("start", async (ctx) => {

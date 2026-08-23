@@ -2,18 +2,22 @@ import type { Context, MiddlewareFn } from "grammy";
 import { ENV } from "../../../config/env.ts";
 import { createLogger } from "../../../lib/logger.ts";
 
-const ALLOWED_CHANNEL_IDS = ENV.TELEGRAM_ALLOWED_CHANNEL.split(",");
-
 const logger = createLogger("withAllowedChannel");
+
 export const withAllowedChannel: MiddlewareFn<Context> = async (ctx, next) => {
-	const chatId = String(ctx.chat?.id);
-	const username = String(ctx.chat?.username);
-	if (!ALLOWED_CHANNEL_IDS.includes(chatId)) {
+	const chatId = ctx.chat?.id;
+	if (chatId === undefined) {
+		logger.warn("Received update without chat - skipping");
+		return;
+	}
+
+	if (!ENV.TELEGRAM_ALLOWED_CHANNEL.includes(chatId)) {
 		logger.warn(
-			{ chatId, username },
-			`Received message from unknown user - skipping`,
+			{ chatId, username: ctx.chat?.username ?? "unknown" },
+			"Received message from unknown chat - skipping",
 		);
 		return;
 	}
+
 	return next();
 };

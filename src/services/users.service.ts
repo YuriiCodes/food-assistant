@@ -1,9 +1,9 @@
-import type { db } from "../db";
+import type { Database } from "../db";
 import { type InsertUserModel, type User, users } from "../db/schema.ts";
 import { assert } from "../lib/assert.ts";
 
 export class UsersService {
-	constructor(private readonly database: typeof db) {}
+	constructor(private readonly database: Database) {}
 
 	async upsert(u: InsertUserModel): Promise<User> {
 		const [user] = await this.database

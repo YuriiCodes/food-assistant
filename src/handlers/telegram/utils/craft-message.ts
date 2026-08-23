@@ -5,9 +5,10 @@ export function craftMessage({
 	totalCalories,
 	fats,
 	protein,
+	description,
 }: FoodAnalysisResult): string {
 	return `
-🍽️ Food Analysis Results:
+🍽️*${description}*:
 Calories: ${totalCalories} kcal
 Carbs: ${carbs}g
 Protein: ${protein}g

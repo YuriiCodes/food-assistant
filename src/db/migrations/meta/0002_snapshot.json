@@ -1,0 +1,202 @@
+{
+	"id": "d6fd2c2f-b177-4163-85c7-f95492a93551",
+	"prevId": "05bbdbc0-459e-4f70-9a2d-727969310cf4",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.meals": {
+			"name": "meals",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"raw_text": {
+					"name": "raw_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"image_file_id": {
+					"name": "image_file_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"total_calories": {
+					"name": "total_calories",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"carbs": {
+					"name": "carbs",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"protein": {
+					"name": "protein",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"fats": {
+					"name": "fats",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"message_id": {
+					"name": "message_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"meals_user_message_id_unique_idx": {
+					"name": "meals_user_message_id_unique_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "message_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"meals_user_created_at_idx": {
+					"name": "meals_user_created_at_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "created_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"meals_user_id_users_id_fk": {
+					"name": "meals_user_id_users_id_fk",
+					"tableFrom": "meals",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.users": {
+			"name": "users",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"telegram_id": {
+					"name": "telegram_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"first_name": {
+					"name": "first_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"username": {
+					"name": "username",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"users_telegram_id_unique": {
+					"name": "users_telegram_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["telegram_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}

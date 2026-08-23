@@ -1,10 +1,10 @@
+import type { IRedisClient } from "bullmq";
 import type { Api } from "grammy";
 import { InlineKeyboard } from "grammy";
-import { redisConn } from "../cache";
+import { craftMessage } from "../handlers/telegram/utils/craft-message.ts";
 import { buildDeleteMealCallbackData } from "../lib/callback-data.ts";
 import { createLogger } from "../lib/logger.ts";
 import type { FoodCalorieExtractor } from "../services/llm/food-calorie-extractor.interface.ts";
-import type { FoodAnalysisResult } from "../services/llm/schemas.ts";
 import type { MealsService } from "../services/meals.service.ts";
 import type { TelegramMediaService } from "../services/telegram-media.service.ts";
 import { BullMQWorkerAdapter } from "./adapters/bullmq-worker.adapter.ts";
@@ -20,22 +20,6 @@ function craftDeleteMealKeyboard(mealId: number): InlineKeyboard {
 	return InlineKeyboard.from([
 		[InlineKeyboard.text("🗑 Delete meal", buildDeleteMealCallbackData(mealId))],
 	]);
-}
-
-function craftMessage({
-	carbs,
-	totalCalories,
-	fats,
-	protein,
-	description,
-}: FoodAnalysisResult): string {
-	return `
-🍽️*${description}*:
-Calories: ${totalCalories} kcal
-Carbs: ${carbs}g
-Protein: ${protein}g
-Fats: ${fats}g
-    `.trim();
 }
 
 async function acknowledge(
@@ -61,6 +45,7 @@ export function createMealWorker(
 	mealsService: MealsService,
 	foodCalorieExtractorService: FoodCalorieExtractor,
 	telegramMediaService: TelegramMediaService,
+	connection: IRedisClient,
 ) {
 	return new BullMQWorkerAdapter<CaloriesIntakeJob>(
 		QUEUE_NAMES.CALORIES_INTAKE_QUEUE,
@@ -88,6 +73,7 @@ export function createMealWorker(
 					const meal = await mealsService.create({
 						userId,
 						rawText,
+						messageId: messageId,
 						...analysis,
 					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
@@ -146,6 +132,7 @@ export function createMealWorker(
 						userId,
 						rawText: caption,
 						imageFileId,
+						messageId: messageId,
 						...analysis,
 					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
@@ -164,7 +151,7 @@ export function createMealWorker(
 				}
 			},
 		},
-		redisConn,
+		connection,
 		{ concurrency: 5 },
 	);
 }
