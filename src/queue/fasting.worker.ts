@@ -1,8 +1,8 @@
 import type { IRedisClient } from "bullmq";
 import type { Api } from "grammy";
 import { FASTING_CONFIG } from "../config/fasting.ts";
-import { formatHoursLabel, formatInTimeZone } from "../lib/fasting-time.ts";
 import { createLogger } from "../lib/logger.ts";
+import { formatHoursLabel, formatInTimeZone } from "../lib/time-utils.ts";
 import { BullMQWorkerAdapter } from "./adapters/bullmq-worker.adapter.ts";
 import { FASTING_JOB_NAMES, type FastingJob } from "./fasting.job.ts";
 import { QUEUE_NAMES } from "./queue-names.constants.ts";

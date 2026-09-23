@@ -6,7 +6,7 @@ import {
 	getFastingWindow,
 	getReminderDelayMs,
 	MS_PER_HOUR,
-} from "./fasting-time.ts";
+} from "./time-utils.ts";
 
 describe("getFastingWindow", () => {
 	it("ends 8 hours after start by default", () => {

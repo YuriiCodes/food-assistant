@@ -1,13 +1,13 @@
 import { Composer } from "grammy";
 import { FASTING_CONFIG } from "../../../config/fasting.ts";
 import { assert } from "../../../lib/assert.ts";
+import { createLogger } from "../../../lib/logger.ts";
 import {
 	formatInTimeZone,
 	getEndDelayMs,
 	getFastingWindow,
 	getReminderDelayMs,
-} from "../../../lib/fasting-time.ts";
-import { createLogger } from "../../../lib/logger.ts";
+} from "../../../lib/time-utils.ts";
 import {
 	FASTING_JOB_NAMES,
 	type FastingJob,

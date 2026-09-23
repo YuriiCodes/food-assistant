@@ -8,8 +8,6 @@ const fastingConfigSchema = z.object({
 
 type FastingConfig = z.infer<typeof fastingConfigSchema>;
 
-// Declarative config: adjust the fasting behavior by editing these
-// hard-coded values only. No env vars involved.
 export const FASTING_CONFIG: FastingConfig = fastingConfigSchema.parse({
 	eatingWindowHours: 8,
 	remindersBeforeEndHours: [3, 1],
