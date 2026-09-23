@@ -4,12 +4,14 @@ import { Sentry } from "../../config/sentry.ts";
 import { TextNutritionReportFormatter } from "../../formatters/text-nutrition-report-formatter.ts";
 import { createLogger } from "../../lib/logger.ts";
 import type { CaloriesIntakeJob } from "../../queue/calories-intake.job.ts";
+import type { FastingJob } from "../../queue/fasting.job.ts";
 import type { Queue } from "../../queue/queue.interface.ts";
 import type { MealsService } from "../../services/meals.service.ts";
 import { TelegramMediaService } from "../../services/telegram-media.service.ts";
 import type { UsersService } from "../../services/users.service.ts";
 import { createCommandHandler } from "./handlers/commands.handler.ts";
 import { createDeleteMealHandler } from "./handlers/delete-meal.handler.ts";
+import { createFastingHandler } from "./handlers/fasting.handler.ts";
 import { createImageHandler } from "./handlers/images.handler.ts";
 import { createTextHandler } from "./handlers/message.handler.ts";
 import { withAllowedChannel } from "./middlewares/with-allowed-channel.ts";
@@ -25,6 +27,7 @@ export class TelegramBot {
 		usersService: UsersService,
 		mealsService: MealsService,
 		queue: Queue<CaloriesIntakeJob>,
+		fastingQueue: Queue<FastingJob>,
 	) {
 		const formatter = new TextNutritionReportFormatter();
 		const telegramMediaService = new TelegramMediaService(this.bot.api);
@@ -33,6 +36,7 @@ export class TelegramBot {
 		this.bot.use(createUserMiddleware(usersService));
 		this.bot.use(withLogging);
 		this.bot.use(createCommandHandler(mealsService, formatter));
+		this.bot.use(createFastingHandler(fastingQueue));
 		this.bot.use(createDeleteMealHandler(mealsService));
 		this.bot.use(createTextHandler(queue));
 		this.bot.use(createImageHandler(queue, telegramMediaService));
