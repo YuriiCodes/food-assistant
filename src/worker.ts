@@ -8,6 +8,7 @@ import { Sentry } from "./config/sentry.ts";
 import { createDatabase } from "./db";
 import { createLogger } from "./lib/logger.ts";
 import { createMealWorker } from "./queue/calories-intake.worker.ts";
+import { createFastingWorker } from "./queue/fasting.worker.ts";
 import { LlmFoodCalorieExtractorService } from "./services/llm/llm-food-calorie-extractor.service.ts";
 import { MealsService } from "./services/meals.service.ts";
 import { TelegramMediaService } from "./services/telegram-media.service.ts";
@@ -38,6 +39,8 @@ export const mealWorker = createMealWorker(
 	redisConn,
 );
 
+export const fastingWorker = createFastingWorker(bot.api, redisConn);
+
 logger.info("⚡ Worker started!");
 
 let shuttingDown = false;
@@ -48,6 +51,7 @@ async function shutdown(signal: NodeJS.Signals) {
 
 	logger.info({ signal }, "Shutting down worker...");
 	await mealWorker.close();
+	await fastingWorker.close();
 	rawClient.close();
 	await database.$client.end();
 	await Sentry.flush(2000);
