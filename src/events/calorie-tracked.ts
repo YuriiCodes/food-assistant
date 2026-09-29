@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { EVENT_BUS_NAMESPACES } from "./event-bus-namespaces.ts";
 import type { EventBus, Unsubscribe } from "./event-bus.ts";
+import { EVENT_BUS_NAMESPACES } from "./event-bus-namespaces.ts";
 
 export interface CalorieTrackedPayload {
 	userId: number;
