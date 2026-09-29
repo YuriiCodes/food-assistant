@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EVENT_BUS_NAMESPACES } from "./event-bus-namespaces.ts";
 import type { EventBus, Unsubscribe } from "./event-bus.ts";
 
 export interface CalorieTrackedPayload {
@@ -8,8 +9,6 @@ export interface CalorieTrackedPayload {
 	totalCalories: number;
 	trackedAt: Date;
 }
-
-export const CALORIE_TRACKED_CHANNEL = "calorie.tracked";
 
 export type CalorieTrackedListener = (
 	payload: CalorieTrackedPayload,
@@ -27,7 +26,7 @@ export function publishCalorieTracked(
 	bus: EventBus,
 	payload: CalorieTrackedPayload,
 ): Promise<void> {
-	return bus.publish(CALORIE_TRACKED_CHANNEL, {
+	return bus.publish(EVENT_BUS_NAMESPACES.CALORIE_TRACKED, {
 		...payload,
 		trackedAt: payload.trackedAt.toISOString(),
 	});
@@ -37,7 +36,7 @@ export function subscribeCalorieTracked(
 	bus: EventBus,
 	listener: CalorieTrackedListener,
 ): Promise<Unsubscribe> {
-	return bus.subscribe<unknown>(CALORIE_TRACKED_CHANNEL, (raw) => {
+	return bus.subscribe<unknown>(EVENT_BUS_NAMESPACES.CALORIE_TRACKED, (raw) => {
 		const parsed = calorieTrackedWireSchema.safeParse(raw);
 		if (parsed.success) {
 			void listener({
