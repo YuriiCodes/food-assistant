@@ -10,33 +10,18 @@ export class UserSettingsService {
 	constructor(private readonly database: Database) {}
 
 	async getOrCreate(userId: number): Promise<UserSettings> {
-		const [existing] = await this.database
-			.select()
-			.from(userSettings)
-			.where(eq(userSettings.userId, userId))
-			.limit(1);
-
-		if (existing) return existing;
-
-		const [created] = await this.database
+		const [settings] = await this.database
 			.insert(userSettings)
 			.values({ userId })
-			.onConflictDoNothing({ target: userSettings.userId })
+			.onConflictDoUpdate({
+				target: userSettings.userId,
+				set: { userId },
+			})
 			.returning();
 
-		if (created) {
-			logger.info({ userId }, "created default user settings");
-			return created;
-		}
+		assert(settings, `Failed to get or create settings for user ${userId}`);
 
-		const [raced] = await this.database
-			.select()
-			.from(userSettings)
-			.where(eq(userSettings.userId, userId))
-			.limit(1);
-
-		assert(raced, `Failed to get or create settings for user ${userId}`);
-		return raced;
+		return settings;
 	}
 
 	async ensureForUser(userId: number): Promise<UserSettings> {
