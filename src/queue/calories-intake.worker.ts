@@ -1,6 +1,7 @@
 import type { IRedisClient } from "bullmq";
 import type { Api } from "grammy";
 import { InlineKeyboard } from "grammy";
+import { eventBus } from "../events/event-bus.ts";
 import { craftMessage } from "../handlers/telegram/utils/craft-message.ts";
 import { buildDeleteMealCallbackData } from "../lib/callback-data.ts";
 import { createLogger } from "../lib/logger.ts";
@@ -78,6 +79,14 @@ export function createMealWorker(
 					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
 
+					eventBus.emitCalorieTracked({
+						userId,
+						chatId,
+						mealId: meal.id,
+						totalCalories: meal.totalCalories,
+						trackedAt: new Date(),
+					});
+
 					await api.sendMessage(chatId, craftMessage(analysis), {
 						reply_parameters: { message_id: messageId },
 						reply_markup: craftDeleteMealKeyboard(meal.id),
@@ -136,6 +145,14 @@ export function createMealWorker(
 						...analysis,
 					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
+
+					eventBus.emitCalorieTracked({
+						userId,
+						chatId,
+						mealId: meal.id,
+						totalCalories: meal.totalCalories,
+						trackedAt: new Date(),
+					});
 
 					await api.sendMessage(chatId, craftMessage(analysis), {
 						reply_parameters: { message_id: messageId },

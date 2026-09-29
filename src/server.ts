@@ -8,6 +8,7 @@ import { createCaloriesIntakeQueue } from "./queue/calories-intake-bull.queue.ts
 import { createFastingQueue } from "./queue/fasting-bull.queue.ts";
 
 import { MealsService } from "./services/meals.service.ts";
+import { UserSettingsService } from "./services/user-settings.service.ts";
 import { UsersService } from "./services/users.service.ts";
 
 const database = createDatabase(ENV.DATABASE_URL);
@@ -15,6 +16,7 @@ const { conn: redisConn } = createRedisConnection(ENV.REDIS_URL);
 
 const usersService = new UsersService(database);
 const mealsService = new MealsService(database);
+const userSettingsService = new UserSettingsService(database);
 
 const mealQueue = createCaloriesIntakeQueue(redisConn);
 const fastingQueue = createFastingQueue(redisConn);
@@ -24,6 +26,7 @@ const telegramBot = new TelegramBot(
 	mealsService,
 	mealQueue,
 	fastingQueue,
+	userSettingsService,
 );
 
 void telegramBot.startPolling();

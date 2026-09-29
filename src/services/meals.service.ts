@@ -42,6 +42,15 @@ export class MealsService {
 		return result.length > 0;
 	}
 
+	async countInRange(userId: number, from: Date, to: Date): Promise<number> {
+		const result = await this.database
+			.select({ count: sql<number>`COUNT(*)`.as("count") })
+			.from(meals)
+			.where(and(eq(meals.userId, userId), between(meals.createdAt, from, to)));
+
+		return Number(result[0]?.count ?? 0);
+	}
+
 	async aggregateNutritionalInfo(
 		userId: number,
 		from: Date,

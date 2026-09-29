@@ -9,9 +9,12 @@ import { createDatabase } from "./db";
 import { createLogger } from "./lib/logger.ts";
 import { createMealWorker } from "./queue/calories-intake.worker.ts";
 import { createFastingWorker } from "./queue/fasting.worker.ts";
+import { createFastingQueue } from "./queue/fasting-bull.queue.ts";
 import { LlmFoodCalorieExtractorService } from "./services/llm/llm-food-calorie-extractor.service.ts";
 import { MealsService } from "./services/meals.service.ts";
 import { TelegramMediaService } from "./services/telegram-media.service.ts";
+import { UserSettingsService } from "./services/user-settings.service.ts";
+import { subscribeFastingAutoStart } from "./subscribers/fasting-auto-start.subscriber.ts";
 
 const logger = createLogger("worker");
 
@@ -19,6 +22,7 @@ const database = createDatabase(ENV.DATABASE_URL);
 const { rawClient, conn: redisConn } = createRedisConnection(ENV.REDIS_URL);
 
 const mealsService = new MealsService(database);
+const userSettingsService = new UserSettingsService(database);
 
 const openrouter = createOpenRouter({
 	apiKey: ENV.OPEN_ROUTER_API_KEY,
@@ -41,6 +45,15 @@ export const mealWorker = createMealWorker(
 
 export const fastingWorker = createFastingWorker(bot.api, redisConn);
 
+const fastingQueue = createFastingQueue(redisConn);
+
+export const unsubscribeFastingAutoStart = subscribeFastingAutoStart({
+	api: bot.api,
+	mealsService,
+	userSettingsService,
+	fastingQueue,
+});
+
 logger.info("⚡ Worker started!");
 
 let shuttingDown = false;
@@ -50,6 +63,7 @@ async function shutdown(signal: NodeJS.Signals) {
 	shuttingDown = true;
 
 	logger.info({ signal }, "Shutting down worker...");
+	unsubscribeFastingAutoStart();
 	await mealWorker.close();
 	await fastingWorker.close();
 	rawClient.close();
