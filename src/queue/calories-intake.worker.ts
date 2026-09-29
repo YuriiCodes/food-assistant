@@ -1,6 +1,8 @@
 import type { IRedisClient } from "bullmq";
 import type { Api } from "grammy";
 import { InlineKeyboard } from "grammy";
+import { publishCalorieTracked } from "../events/calorie-tracked.ts";
+import type { EventBus } from "../events/event-bus.ts";
 import { craftMessage } from "../handlers/telegram/utils/craft-message.ts";
 import { buildDeleteMealCallbackData } from "../lib/callback-data.ts";
 import { createLogger } from "../lib/logger.ts";
@@ -46,6 +48,7 @@ export function createMealWorker(
 	foodCalorieExtractorService: FoodCalorieExtractor,
 	telegramMediaService: TelegramMediaService,
 	connection: IRedisClient,
+	eventBus: EventBus,
 ) {
 	return new BullMQWorkerAdapter<CaloriesIntakeJob>(
 		QUEUE_NAMES.CALORIES_INTAKE_QUEUE,
@@ -77,6 +80,14 @@ export function createMealWorker(
 						...analysis,
 					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
+
+					await publishCalorieTracked(eventBus, {
+						userId,
+						chatId,
+						mealId: meal.id,
+						totalCalories: meal.totalCalories,
+						trackedAt: new Date(),
+					});
 
 					await api.sendMessage(chatId, craftMessage(analysis), {
 						reply_parameters: { message_id: messageId },
@@ -136,6 +147,14 @@ export function createMealWorker(
 						...analysis,
 					});
 					logger.info({ userId, chatId, messageId }, "persisted meal");
+
+					await publishCalorieTracked(eventBus, {
+						userId,
+						chatId,
+						mealId: meal.id,
+						totalCalories: meal.totalCalories,
+						trackedAt: new Date(),
+					});
 
 					await api.sendMessage(chatId, craftMessage(analysis), {
 						reply_parameters: { message_id: messageId },

@@ -4,6 +4,7 @@ import {
 	relations,
 } from "drizzle-orm";
 import {
+	boolean,
 	index,
 	integer,
 	pgTable,
@@ -58,8 +59,37 @@ export const meals = pgTable(
 
 export type InsertMealsModel = InferInsertModel<typeof meals>;
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const userSettings = pgTable("user_settings", {
+	userId: integer("user_id")
+		.primaryKey()
+		.references(() => users.id, { onDelete: "cascade" }),
+	autoStartEatingWindow: boolean("auto_start_eating_window")
+		.default(false)
+		.notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+});
+
+export type UserSettings = InferSelectModel<typeof userSettings>;
+export type InsertUserSettingsModel = InferInsertModel<typeof userSettings>;
+
+export const usersRelations = relations(users, ({ many, one }) => ({
 	meals: many(meals),
+	settings: one(userSettings, {
+		fields: [users.id],
+		references: [userSettings.userId],
+	}),
+}));
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+	user: one(users, {
+		fields: [userSettings.userId],
+		references: [users.id],
+	}),
 }));
 
 export const mealsRelations = relations(meals, ({ one }) => ({

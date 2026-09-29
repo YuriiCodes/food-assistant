@@ -10,3 +10,6 @@ export function parseDeleteMealCallbackData(data: string): number | null {
 	const match = DELETE_MEAL_CALLBACK_REGEX.exec(data);
 	return match ? Number(match[1]) : null;
 }
+
+export const SETTINGS_TOGGLE_AUTO_START_CALLBACK_DATA =
+	"settings:toggle_auto_start";
