@@ -1,36 +1,39 @@
-import { EventEmitter } from "node:events";
+import type { RedisClient } from "bun";
 
-export interface CalorieTrackedPayload {
-	userId: number;
-	chatId: number;
-	mealId: number;
-	totalCalories: number;
-	trackedAt: Date;
+export type EventListener<T> = (payload: T) => void | Promise<void>;
+
+export type Unsubscribe = () => Promise<void>;
+
+export interface EventBus {
+	publish(channel: string, payload: unknown): Promise<void>;
+	subscribe<T>(
+		channel: string,
+		listener: EventListener<T>,
+	): Promise<Unsubscribe>;
 }
 
-export const CALORIE_TRACKED_EVENT = "calorie.tracked" as const;
-
-type CalorieTrackedListener = (
-	payload: CalorieTrackedPayload,
-) => void | Promise<void>;
-
-class TypedEventBus {
-	private readonly emitter = new EventEmitter();
-
-	constructor() {
-		this.emitter.setMaxListeners(20);
-	}
-
-	emitCalorieTracked(payload: CalorieTrackedPayload): void {
-		this.emitter.emit(CALORIE_TRACKED_EVENT, payload);
-	}
-
-	onCalorieTracked(listener: CalorieTrackedListener): () => void {
-		this.emitter.on(CALORIE_TRACKED_EVENT, listener);
-		return () => {
-			this.emitter.off(CALORIE_TRACKED_EVENT, listener);
-		};
-	}
+export function createRedisEventBus(
+	publisher: RedisClient,
+	subscriber: RedisClient,
+): EventBus {
+	return {
+		async publish(channel: string, payload: unknown): Promise<void> {
+			await publisher.publish(channel, JSON.stringify(payload));
+		},
+		async subscribe<T>(
+			channel: string,
+			listener: EventListener<T>,
+		): Promise<Unsubscribe> {
+			await subscriber.subscribe(channel, (message) => {
+				let payload: unknown;
+				try {
+					payload = JSON.parse(message);
+				} catch {
+					return;
+				}
+				void listener(payload as T);
+			});
+			return () => subscriber.unsubscribe(channel);
+		},
+	};
 }
-
-export const eventBus = new TypedEventBus();
